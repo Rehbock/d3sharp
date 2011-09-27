@@ -25,7 +25,6 @@ namespace D3Sharp.Core.NPC
         float MaxHP;
         protected Vector3D position = new Vector3D();
 
-<<<<<<< HEAD
         public Vector3D Position
         {
             get
@@ -44,13 +43,6 @@ namespace D3Sharp.Core.NPC
         public virtual void Collide(BasicNPC actor)
         {
 
-=======
-        protected GameClient Game;
-
-        public virtual void Tick()
-        {
-
->>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
         }
 
         public void Init(int objectId, ref GameClient g)
