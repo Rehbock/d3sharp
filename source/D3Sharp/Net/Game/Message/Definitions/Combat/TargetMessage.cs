@@ -43,7 +43,7 @@ namespace D3Sharp.Net.Game.Message.Definitions.Combat
 
         public override void Handle(GameClient client)
         {
-            Random rand = new Random();
+            
             if (this.Field1 == 0x77F20036)
             {
                 client.EnterInn();
@@ -61,7 +61,7 @@ namespace D3Sharp.Net.Game.Message.Definitions.Combat
                     }
                     else
                     {
-                        monster.Pain(18 + rand.Next(8));
+                        monster.Pain(18 + RandomHelper.Next(8));
 
                         if (monster.IsDead())
                         {

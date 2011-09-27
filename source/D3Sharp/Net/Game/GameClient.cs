@@ -66,7 +66,9 @@ namespace D3Sharp.Net.Game
 
         public bool IsLoggingOut;
 
+        public int NextExperince = 1200;
         public int Experience = 1200;
+        
 
 
         public GameClient(IConnection connection, Universe GU)
@@ -78,6 +80,13 @@ namespace D3Sharp.Net.Game
 
         public void UpdateExperience(int exp)
         {
+            if (Experience <= 0)
+            {
+                NextExperince *= 2;
+                Experience = NextExperince;
+
+
+            }
             Experience -= exp;
 
             SendMessage(new AttributeSetValueMessage()

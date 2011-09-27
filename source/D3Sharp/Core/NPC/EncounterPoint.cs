@@ -8,15 +8,14 @@ using D3Sharp.Net.Game;
 using D3Sharp.Core.Map;
 
 using D3Sharp.Net.Game.Message.Fields;
-
+using D3Sharp.Core.Helpers;
 namespace D3Sharp.Core.NPC
 {
     public class EncounterPoint
     {
         IList<Monster> ObjectIdsSpawned;
         GameClient _client;
-        Random rand = new Random();
-
+        
         public static int SmallEncounter
         {
             get
@@ -41,7 +40,7 @@ namespace D3Sharp.Core.NPC
             ObjectIdsSpawned = new List<Monster>();
             _client = client;
 
-            numMonsters += rand.Next(3);
+            numMonsters += RandomHelper.Next(3);
 
             for (int i = 0; i < numMonsters; i++)
             {
@@ -49,8 +48,8 @@ namespace D3Sharp.Core.NPC
                 Monster monster = (Monster)world.SpawnNPC(monsterType);
 
                 // Random spawn offset.
-                float xpos = (float)(rand.NextDouble() * 20);
-                float ypos = (float)(rand.NextDouble() * 20);
+                float xpos = (float)(RandomHelper.NextDouble() * 20);
+                float ypos = (float)(RandomHelper.NextDouble() * 20);
                 
                 // Init the monster and set the position with the randomized coordinates.
                 monster.Init(_client.GetNextValidObjectID(), ref client);

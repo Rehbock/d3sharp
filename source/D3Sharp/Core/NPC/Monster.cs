@@ -26,7 +26,6 @@ namespace D3Sharp.Core.NPC
         protected int spawnId;
         protected NPCList npcType;
         private bool isDead = false;
-        private Random rand = new Random();
 
         public readonly int experience = 90;
 
@@ -71,10 +70,18 @@ namespace D3Sharp.Core.NPC
 
         protected void LookAtPlayer()
         {
-            Game.SendMessage(new ACDLookAtMessage() {
-                Field0=ID,
-                Field1=0x789E00E2
+            Game.SendMessage(new ACDTranslateNormalMessage()
+            {
+                Field0 = ID,
+                Field1 = Position,
+                Id = 0x006E,
+                Field2 = (float)Math.Atan2(Position.Field0 - Game.position.Field0, Position.Field1 - Game.position.Field1),
+                Field3 = false,
+                Field4 = 1.0f,
+                Field5 = 0,
+                Field6 = 69728,
             });
+
 
             Game.tick += 2;
             Game.SendMessage(new EndOfTickMessage()

@@ -38,6 +38,7 @@ using D3Sharp.Core.Toons;
 using D3Sharp.Net.Game.Message.Definitions.Misc;
 using D3Sharp.Net.Game.Message.Definitions.Animation;
 using D3Sharp.Net.Game.Message.Definitions.Attribute;
+using D3Sharp.Core.Helpers;
 
 namespace D3Sharp.Core.Map
 {
@@ -47,7 +48,7 @@ namespace D3Sharp.Core.Map
         private List<BasicNPC> NPCs;
         private List<Actor> Actors;
         private List<Scene> Scenes;
-        private Random rand = new Random();
+
 
         public List<EncounterPoint> encounters = new List<EncounterPoint>();
         private int tick = 0;
@@ -318,7 +319,7 @@ namespace D3Sharp.Core.Map
             {
                 Id = 0x70,
                 Field0 = objectId,
-                Field1 = (float)(rand.NextDouble() * 2.0 * Math.PI),
+                Field1 = (float)(RandomHelper.NextDouble() * 2.0 * Math.PI),
                 Field2 = false
             });
 

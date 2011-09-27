@@ -34,13 +34,16 @@ namespace D3Sharp.Core.NPC
 
             base.Tick();
 
-          //  LookAtPlayer();
+            //LookAtPlayer();
 
-            if (distFromPlayer < 13)
+            if (distFromPlayer > 13 && distFromPlayer < 64 )
             {
               //  MeleeAttack(6);
             }
-           
+            else if (distFromPlayer < 13)
+            {
+
+            }
             else
             {
                 nextThink += 5;
