@@ -23,10 +23,24 @@ namespace D3Sharp.Core.NPC
         public int nextThink = 0;
         protected float HP = 0;
         float MaxHP;
+        protected Vector3D position = new Vector3D();
+
+        public Vector3D Position
+        {
+            get
+            {
+                return position;
+            }
+        }
 
         protected GameClient Game;
 
         public virtual void Tick()
+        {
+
+        }
+
+        public virtual void Collide(BasicNPC actor)
         {
 
         }

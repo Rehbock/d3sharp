@@ -16,9 +16,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+using System;
 using System.Text;
-using D3Sharp.Core.Helpers;
+
 using D3Sharp.Core.NPC;
+using D3Sharp.Core.Helpers;
+using D3Sharp.Net.Game.Message.Definitions.Animation;
+using D3Sharp.Net.Game.Message.Definitions.Attribute;
+using D3Sharp.Net.Game.Message.Definitions.Effect;
+using D3Sharp.Net.Game.Message.Definitions.Misc;
 using D3Sharp.Net.Game.Message.Fields;
 using D3Sharp.Net.Game.Messages;
 
@@ -32,7 +38,8 @@ namespace D3Sharp.Net.Game.Message.Definitions.Animation
 
         public override void Handle(GameClient client)
         {
-           
+
+            
         }
 
         public override void Parse(GameBitBuffer buffer)

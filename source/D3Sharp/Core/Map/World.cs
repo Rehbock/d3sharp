@@ -259,7 +259,7 @@ namespace D3Sharp.Core.Map
                 atKeyVals = new NetAttributeKeyValue[9] {
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[86],
-                        Float = 4.546875f
+                        Float = 100.0f
                     },
                     new NetAttributeKeyValue {
                         Field0 = 79486,
@@ -268,7 +268,7 @@ namespace D3Sharp.Core.Map
                     },
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[84],
-                        Float = 4.546875f
+                        Float = 100.0f
                     },
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[81],
@@ -276,7 +276,7 @@ namespace D3Sharp.Core.Map
                     },
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[77],
-                        Float = 4.546875f
+                        Float = 100.0f
                     },
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[69],
@@ -359,15 +359,22 @@ namespace D3Sharp.Core.Map
 
         public void Tick(GameClient client)
         {
+            bool updateTick = false;
+            if (NPCs == null)
+                return;
+
             foreach (BasicNPC npc in NPCs)
             {
                 if (tick >= npc.nextThink)
                 {
+                    updateTick = true;
                     npc.Tick();
-
-
-
                 }
+            }
+
+            if (updateTick)
+            {
+                
             }
 
             tick++;
@@ -375,6 +382,9 @@ namespace D3Sharp.Core.Map
 
         public bool InWorld()
         {
+            if (encounters == null)
+                return false;
+
             return encounters.Count > 0;
         }
 

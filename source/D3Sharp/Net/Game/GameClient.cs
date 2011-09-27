@@ -56,7 +56,7 @@ namespace D3Sharp.Net.Game
         public Universe GameUniverse;
         
         public int packetId = 0x227 + 20;
-        public int tick = 0;
+        public int tick = (int)0x0000009F;
         public  int objectId = 0x78f50114 + 100;
 
         public IList<int> objectIdsSpawned = null;

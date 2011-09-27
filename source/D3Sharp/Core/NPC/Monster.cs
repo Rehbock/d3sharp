@@ -22,7 +22,7 @@ namespace D3Sharp.Core.NPC
     //
     public abstract class Monster : BasicNPC
     {
-        private Vector3D position = new Vector3D();
+        
         protected int spawnId;
         protected NPCList npcType;
         private bool isDead = false;
@@ -52,7 +52,7 @@ namespace D3Sharp.Core.NPC
 
         private int animTime = 0;
 
-        public Monster(int Pain, int Attack, int walk, int idle, int Death)
+        public Monster(short Pain, short Attack, short walk, short idle, short Death)
         {
             PainAnimation = Pain;
             AttackAnimation = Attack;
@@ -62,6 +62,11 @@ namespace D3Sharp.Core.NPC
 
         }
 
+        public override void Collide(BasicNPC actor)
+        {
+            nextThink += 100;
+        }
+
         private void MoveActor()
         {
             Game.SendMessage(new ACDTranslateNormalMessage()
@@ -69,7 +74,7 @@ namespace D3Sharp.Core.NPC
                 Field0 = ID,
                 Field1 = Position,
                 Id = 0x006E,
-                Field2 = 0.08464038f,
+                Field2 = (float)Math.Atan2(Position.Field0 - Game.position.Field0, Position.Field1 - Game.position.Field1),
                 Field3 = false,
                 Field4 = 1.0f,
                  Field5 = 0,
@@ -77,54 +82,39 @@ namespace D3Sharp.Core.NPC
             });
 
 
-            Game.tick += 20;
+            Game.tick += 2;
             Game.SendMessage(new EndOfTickMessage()
             {
                 Id = 0x008D,
-                Field0 = Game.tick - 20,
+                Field0 = Game.tick - 2,
                 Field1 = Game.tick
             });
+
+            Game.FlushOutgoingBuffer();
         }
 
         public void MoveToPlayer()
         {
+            if (Game == null || Game.position == null)
+                return;
+
             state = MonsterState.MOB_STATE_WALKING_TO_PLAYER;
 
             xvel = Game.position.Field0 - Position.Field0;
             yvel = Game.position.Field1 - Position.Field1;
 
-            Position.Field0 += xvel * 0.0608f;
-            Position.Field1 += yvel * 0.0608f;
-
+            Position.Field0 += xvel * 0.108f;
+            Position.Field1 += yvel * 0.108f;
 
             PlayAnimation(WalkAnimation);
+
+            nextThink += 3;
 
             MoveActor();
         }
 
         protected void MeleeAttack(int damage)
         {
-
-            if (state == MonsterState.MOB_STATE_PAIN)
-            {
-                return;
-            }
-
-            if (state != MonsterState.MOB_STATE_ATTACKING)
-            {
-                state = MonsterState.MOB_STATE_ATTACKING;
-                nextThink += 60;
-                animTime = 3;
-            }
-            
-            if (animTime < 0)
-            {
-                state = MonsterState.MOB_STATE_IDLE;
-                PlayAnimation(WalkAnimation);
-                nextThink += 450;
-                return;
-            }
-
             PlayAnimation(AttackAnimation);
 
             Game.packetId += 10 * 2;
@@ -133,6 +123,8 @@ namespace D3Sharp.Core.NPC
                 Id = 0x89,
                 Field0 = Game.packetId,
             });
+
+            nextThink += 40;
 
             Game.FlushOutgoingBuffer();
         }
@@ -221,7 +213,22 @@ namespace D3Sharp.Core.NPC
                 Field2 = 0,
             });
 
-            PlayAnimation(PainAnimation);
+            if (HP > 0)
+            {
+                Game.SendMessage(new AttributeSetValueMessage
+                {
+                    Id = 0x4c,
+                    Field0 = ID,
+                    Field1 = new NetAttributeKeyValue
+                    {
+                        Attribute = GameAttribute.Attributes[77],
+                        Float = HP
+                    }
+                });
+
+                PlayAnimation(PainAnimation);
+            }
+                    
 
             
 
@@ -231,6 +238,10 @@ namespace D3Sharp.Core.NPC
                 Id = 0x89,
                 Field0 = Game.packetId,
             });
+
+         
+
+            Game.FlushOutgoingBuffer();
         }
 
         public bool IsDead()
@@ -244,24 +255,18 @@ namespace D3Sharp.Core.NPC
                 return;
 
             isDead = true;
-            var killAni = new int[]{
-                    0x2cd7,
-                    0x2cd4,
-                    0x01b378,
-                    0x2cdc,
-                    0x02f2,
-                    0x2ccf,
-                    0x2cd0,
-                    0x2cd1,
-                    0x2cd2,
-                    0x2cd3,
-                    0x2cd5,
-                    0x01b144,
-                    0x2cd6,
-                    0x2cd8,
-                    0x2cda,
-                    0x2cd9
-            };
+
+            Game.SendMessage(new AttributeSetValueMessage
+            {
+                Id = 0x4c,
+                Field0 = ID,
+                Field1 = new NetAttributeKeyValue
+                {
+                    Attribute = GameAttribute.Attributes[77],
+                    Float = 0
+                }
+            });
+
             Game.SendMessage(new PlayEffectMessage()
             {
                 Id = 0x7a,
@@ -290,7 +295,7 @@ namespace D3Sharp.Core.NPC
                 Field0 = ID,
             });
 
-            int ani = killAni[rand.Next(killAni.Length)];
+            int ani = DeathAnimation;
 
             Game.SendMessage(new PlayAnimationMessage()
             {
@@ -386,13 +391,16 @@ namespace D3Sharp.Core.NPC
                 Field2 = 0x2,
                 Field3 = false,
             });
+
             Game.packetId += 10 * 2;
             Game.SendMessage(new DWordDataMessage()
             {
                 Id = 0x89,
                 Field0 = Game.packetId,
             });
+           
 
+            Game.FlushOutgoingBuffer();
         }
 
 

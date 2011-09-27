@@ -10,9 +10,9 @@ namespace D3Sharp.Core.NPC
     class MonsterSkeleton : Monster
     {
         public MonsterSkeleton()
-            : base(0x26db, 0x26dd, 0x26dc, 0x26dc, 0)
+            : base(9811, 9792, 9811, 9831, 9807)
         {
-            npcType = NPCList.Skeleton_A;
+            npcType = NPCList.SkeletonArcher_A;
             HP = 100;
         }
 
@@ -24,18 +24,21 @@ namespace D3Sharp.Core.NPC
             if (Game == null || Game.position == null)
                 return;
 
+            if (HP <= 0)
+            {
+                Die();
+                return;
+            }
+
             float distFromPlayer = Game.position.Distance(Position);
 
             base.Tick();
 
-            if (distFromPlayer < 10)
+            if (distFromPlayer < 13)
             {
-                MeleeAttack(6);
+              //  MeleeAttack(6);
             }
-            //else if (distFromPlayer < 64)
-           //{
-                //MoveToPlayer();
-          //  }
+           
             else
             {
                 nextThink += 5;

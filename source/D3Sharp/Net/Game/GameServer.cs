@@ -51,7 +51,7 @@ namespace D3Sharp.Net.Game
             {
                 for (int i = 0; i < clients.Count; i++)
                 {
-                    if (clients[i].GameUniverse != null && clients[i].GameUniverse.GetLocalWorld().InWorld())
+                    if (clients[i].GameUniverse != null &&  clients[i].GameUniverse.GetLocalWorld() != null && clients[i].GameUniverse.GetLocalWorld().InWorld())
                     {
                         lock (clients[i].GameUniverse)
                         {

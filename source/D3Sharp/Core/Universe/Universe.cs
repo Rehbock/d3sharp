@@ -152,9 +152,9 @@ namespace D3Sharp.Core.Universe
             //initialize world entry point for player to the new character entry area for now
             currentToon.CurrentWorldID = 0x772E0000;
             currentToon.CurrentWorldSNO = 0x115EE;
-            currentToon.PosX = 3143.75f;
-            currentToon.PosY = 2828.75f;
-            currentToon.PosZ = 59.075588f;
+            currentToon.PosX = 2477.483f;
+            currentToon.PosY = 2835.02954f;
+            currentToon.PosZ = 27.1000023f;
 
             //reveal world to the toon
             World w = GetWorld(currentToon.CurrentWorldID);
