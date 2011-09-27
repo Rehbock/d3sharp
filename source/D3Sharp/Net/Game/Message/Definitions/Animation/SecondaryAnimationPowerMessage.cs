@@ -38,8 +38,12 @@ namespace D3Sharp.Net.Game.Message.Definitions.Animation
 
         public override void Handle(GameClient client)
         {
+<<<<<<< HEAD
 
             
+=======
+           
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
         }
 
         public override void Parse(GameBitBuffer buffer)

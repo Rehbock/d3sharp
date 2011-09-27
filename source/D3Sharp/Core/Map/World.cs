@@ -259,7 +259,11 @@ namespace D3Sharp.Core.Map
                 atKeyVals = new NetAttributeKeyValue[9] {
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[86],
+<<<<<<< HEAD
                         Float = 100.0f
+=======
+                        Float = 4.546875f
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
                     },
                     new NetAttributeKeyValue {
                         Field0 = 79486,
@@ -268,7 +272,11 @@ namespace D3Sharp.Core.Map
                     },
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[84],
+<<<<<<< HEAD
                         Float = 100.0f
+=======
+                        Float = 4.546875f
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
                     },
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[81],
@@ -276,7 +284,11 @@ namespace D3Sharp.Core.Map
                     },
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[77],
+<<<<<<< HEAD
                         Float = 100.0f
+=======
+                        Float = 4.546875f
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
                     },
                     new NetAttributeKeyValue {
                         Attribute = GameAttribute.Attributes[69],
@@ -359,14 +371,18 @@ namespace D3Sharp.Core.Map
 
         public void Tick(GameClient client)
         {
+<<<<<<< HEAD
             bool updateTick = false;
             if (NPCs == null)
                 return;
 
+=======
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
             foreach (BasicNPC npc in NPCs)
             {
                 if (tick >= npc.nextThink)
                 {
+<<<<<<< HEAD
                     updateTick = true;
                     npc.Tick();
                 }
@@ -375,6 +391,13 @@ namespace D3Sharp.Core.Map
             if (updateTick)
             {
                 
+=======
+                    npc.Tick();
+
+
+
+                }
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
             }
 
             tick++;
@@ -382,9 +405,12 @@ namespace D3Sharp.Core.Map
 
         public bool InWorld()
         {
+<<<<<<< HEAD
             if (encounters == null)
                 return false;
 
+=======
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
             return encounters.Count > 0;
         }
 

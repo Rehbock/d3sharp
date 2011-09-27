@@ -58,6 +58,7 @@ namespace D3Sharp.Net.Game.Message.Definitions.Combat
                     {
                         monster.Die();
                         client.GetLocalWorld().encounters[i].RemoveMonster(monster);
+<<<<<<< HEAD
                     }
                     else
                     {
@@ -69,6 +70,13 @@ namespace D3Sharp.Net.Game.Message.Definitions.Combat
                             client.GetLocalWorld().encounters[i].RemoveMonster(monster);
                         }
                     }
+=======
+                    }
+                    else
+                    {
+                        monster.Pain(18 + rand.Next(8));
+                    }
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
 
                     break;
                 }

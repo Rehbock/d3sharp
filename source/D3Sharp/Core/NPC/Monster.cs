@@ -22,7 +22,11 @@ namespace D3Sharp.Core.NPC
     //
     public abstract class Monster : BasicNPC
     {
+<<<<<<< HEAD
         
+=======
+        private Vector3D position = new Vector3D();
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
         protected int spawnId;
         protected NPCList npcType;
         private bool isDead = false;
@@ -52,7 +56,11 @@ namespace D3Sharp.Core.NPC
 
         private int animTime = 0;
 
+<<<<<<< HEAD
         public Monster(short Pain, short Attack, short walk, short idle, short Death)
+=======
+        public Monster(int Pain, int Attack, int walk, int idle, int Death)
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
         {
             PainAnimation = Pain;
             AttackAnimation = Attack;
@@ -62,11 +70,14 @@ namespace D3Sharp.Core.NPC
 
         }
 
+<<<<<<< HEAD
         public override void Collide(BasicNPC actor)
         {
             nextThink += 100;
         }
 
+=======
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
         private void MoveActor()
         {
             Game.SendMessage(new ACDTranslateNormalMessage()
@@ -74,7 +85,11 @@ namespace D3Sharp.Core.NPC
                 Field0 = ID,
                 Field1 = Position,
                 Id = 0x006E,
+<<<<<<< HEAD
                 Field2 = (float)Math.Atan2(Position.Field0 - Game.position.Field0, Position.Field1 - Game.position.Field1),
+=======
+                Field2 = 0.08464038f,
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
                 Field3 = false,
                 Field4 = 1.0f,
                  Field5 = 0,
@@ -82,6 +97,7 @@ namespace D3Sharp.Core.NPC
             });
 
 
+<<<<<<< HEAD
             Game.tick += 2;
             Game.SendMessage(new EndOfTickMessage()
             {
@@ -91,30 +107,74 @@ namespace D3Sharp.Core.NPC
             });
 
             Game.FlushOutgoingBuffer();
+=======
+            Game.tick += 20;
+            Game.SendMessage(new EndOfTickMessage()
+            {
+                Id = 0x008D,
+                Field0 = Game.tick - 20,
+                Field1 = Game.tick
+            });
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
         }
 
         public void MoveToPlayer()
         {
+<<<<<<< HEAD
             if (Game == null || Game.position == null)
                 return;
 
+=======
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
             state = MonsterState.MOB_STATE_WALKING_TO_PLAYER;
 
             xvel = Game.position.Field0 - Position.Field0;
             yvel = Game.position.Field1 - Position.Field1;
 
+<<<<<<< HEAD
             Position.Field0 += xvel * 0.108f;
             Position.Field1 += yvel * 0.108f;
 
             PlayAnimation(WalkAnimation);
 
             nextThink += 3;
+=======
+            Position.Field0 += xvel * 0.0608f;
+            Position.Field1 += yvel * 0.0608f;
+
+
+            PlayAnimation(WalkAnimation);
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
 
             MoveActor();
         }
 
         protected void MeleeAttack(int damage)
         {
+<<<<<<< HEAD
+=======
+
+            if (state == MonsterState.MOB_STATE_PAIN)
+            {
+                return;
+            }
+
+            if (state != MonsterState.MOB_STATE_ATTACKING)
+            {
+                state = MonsterState.MOB_STATE_ATTACKING;
+                nextThink += 60;
+                animTime = 3;
+            }
+            
+            if (animTime < 0)
+            {
+                state = MonsterState.MOB_STATE_IDLE;
+                PlayAnimation(WalkAnimation);
+                nextThink += 450;
+                return;
+            }
+
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
             PlayAnimation(AttackAnimation);
 
             Game.packetId += 10 * 2;
@@ -124,8 +184,11 @@ namespace D3Sharp.Core.NPC
                 Field0 = Game.packetId,
             });
 
+<<<<<<< HEAD
             nextThink += 40;
 
+=======
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
             Game.FlushOutgoingBuffer();
         }
 
@@ -213,6 +276,7 @@ namespace D3Sharp.Core.NPC
                 Field2 = 0,
             });
 
+<<<<<<< HEAD
             if (HP > 0)
             {
                 Game.SendMessage(new AttributeSetValueMessage
@@ -229,6 +293,9 @@ namespace D3Sharp.Core.NPC
                 PlayAnimation(PainAnimation);
             }
                     
+=======
+            PlayAnimation(PainAnimation);
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
 
             
 
@@ -238,10 +305,13 @@ namespace D3Sharp.Core.NPC
                 Id = 0x89,
                 Field0 = Game.packetId,
             });
+<<<<<<< HEAD
 
          
 
             Game.FlushOutgoingBuffer();
+=======
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
         }
 
         public bool IsDead()
@@ -255,6 +325,7 @@ namespace D3Sharp.Core.NPC
                 return;
 
             isDead = true;
+<<<<<<< HEAD
 
             Game.SendMessage(new AttributeSetValueMessage
             {
@@ -267,6 +338,26 @@ namespace D3Sharp.Core.NPC
                 }
             });
 
+=======
+            var killAni = new int[]{
+                    0x2cd7,
+                    0x2cd4,
+                    0x01b378,
+                    0x2cdc,
+                    0x02f2,
+                    0x2ccf,
+                    0x2cd0,
+                    0x2cd1,
+                    0x2cd2,
+                    0x2cd3,
+                    0x2cd5,
+                    0x01b144,
+                    0x2cd6,
+                    0x2cd8,
+                    0x2cda,
+                    0x2cd9
+            };
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
             Game.SendMessage(new PlayEffectMessage()
             {
                 Id = 0x7a,
@@ -295,7 +386,11 @@ namespace D3Sharp.Core.NPC
                 Field0 = ID,
             });
 
+<<<<<<< HEAD
             int ani = DeathAnimation;
+=======
+            int ani = killAni[rand.Next(killAni.Length)];
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
 
             Game.SendMessage(new PlayAnimationMessage()
             {
@@ -391,16 +486,23 @@ namespace D3Sharp.Core.NPC
                 Field2 = 0x2,
                 Field3 = false,
             });
+<<<<<<< HEAD
 
+=======
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
             Game.packetId += 10 * 2;
             Game.SendMessage(new DWordDataMessage()
             {
                 Id = 0x89,
                 Field0 = Game.packetId,
             });
+<<<<<<< HEAD
            
 
             Game.FlushOutgoingBuffer();
+=======
+
+>>>>>>> 733b6deda75b65d6f99c389afce86fd4f81be299
         }
 
 
