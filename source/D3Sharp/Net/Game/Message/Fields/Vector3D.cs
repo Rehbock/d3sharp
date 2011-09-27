@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using D3Sharp.Net.Game.Messages;
 
@@ -8,6 +9,31 @@ namespace D3Sharp.Net.Game.Message.Fields
         public float Field0;
         public float Field1;
         public float Field2;
+
+        public Vector3D()
+        {
+
+        }
+
+        public float DotProduct(Vector3D v)
+        {
+            return Field0 * v.Field0 + Field1 * v.Field1 + Field2 * v.Field2;
+        }
+
+        public float Distance(Vector3D v)
+        {
+            return (float)Math.Sqrt(((v.Field0 - Field0) * (v.Field0 - Field0)) +
+                              ((v.Field1 - Field1) * (v.Field1 - Field1)) +
+                              ((v.Field2 - Field2) * (v.Field2 - Field2)));
+
+        }
+
+        public Vector3D(float x, float y, float z)
+        {
+            Field0 = x;
+            Field1 = y;
+            Field2 = z;
+        }
 
         public void Parse(GameBitBuffer buffer)
         {

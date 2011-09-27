@@ -35,6 +35,9 @@ using D3Sharp.Utils.Extensions;
 using D3Sharp.Core.NPC;
 using D3Sharp.Core.Actors;
 using D3Sharp.Core.Toons;
+using D3Sharp.Net.Game.Message.Definitions.Misc;
+using D3Sharp.Net.Game.Message.Definitions.Animation;
+using D3Sharp.Net.Game.Message.Definitions.Attribute;
 
 namespace D3Sharp.Core.Map
 {
@@ -44,6 +47,10 @@ namespace D3Sharp.Core.Map
         private List<BasicNPC> NPCs;
         private List<Actor> Actors;
         private List<Scene> Scenes;
+        private Random rand = new Random();
+
+        public List<EncounterPoint> encounters = new List<EncounterPoint>();
+        private int tick = 0;
 
         public int WorldID;
         public int WorldSNO;
@@ -68,6 +75,307 @@ namespace D3Sharp.Core.Map
             for (int x = 0; x < Actors.Count; x++)
                 if (Actors[x].ID == ID) return Actors[x];
             return null;
+        }
+
+        private void CreateEncounter(GameClient client, Type type, int encounterSize, float x, float y, float z)
+        {
+            EncounterPoint encounter = new EncounterPoint(this, client, type, encounterSize, new Vector3D(x, y, z));
+            encounters.Add(encounter);
+        }
+
+        public void SendEncounters(GameClient client)
+        {
+            CreateEncounter(client, typeof(MonsterSkeleton), EncounterPoint.MedEncounter, 2504.14624f, 2864.31787f, 27.1f);
+            CreateEncounter(client, typeof(MonsterSkeleton), EncounterPoint.MedEncounter, 2477.483f, 2835.02954f, 27.1000023f);
+        }
+
+        public BasicNPC SpawnNPC(Type type)
+        {
+            BasicNPC npc = (BasicNPC)Activator.CreateInstance(type);
+
+            NPCs.Add(npc);
+
+            return npc;
+        }
+
+        public void SpawnMob(GameClient Game, Vector3D position, Monster monster)
+        {
+            int nId = monster.SpawnID;
+            int objectId = monster.ID;
+
+            #region ACDEnterKnown Hittable Zombie
+            Game.SendMessage(new ACDEnterKnownMessage()
+            {
+                Id = 0x003B,
+                Field0 = objectId,
+                Field1 = nId,
+                Field2 = 0x8,
+                Field3 = 0x0,
+                Field4 = new WorldLocationMessageData()
+                {
+                    Field0 = 1.35f,
+                    Field1 = new PRTransform()
+                    {
+                        Field0 = new Quaternion()
+                        {
+                            Field0 = 0.768145f,
+                            Field1 = new Vector3D()
+                            {
+                                Field0 = 0f,
+                                Field1 = 0f,
+                                Field2 = -0.640276f,
+                            },
+                        },
+                        Field1 = new Vector3D()
+                        {
+                            Field0 = position.Field0 + 5,
+                            Field1 = position.Field1 + 5,
+                            Field2 = position.Field2,
+                        },
+                    },
+                    Field2 = 0x772E0000,
+                },
+                Field5 = null,
+                Field6 = new GBHandle()
+                {
+                    Field0 = 1,
+                    Field1 = 1,
+                },
+                Field7 = 0x00000001,
+                Field8 = nId,
+                Field9 = 0x0,
+                Field10 = 0x0,
+                Field11 = 0x0,
+                Field12 = 0x0,
+                Field13 = 0x0
+            });
+            Game.SendMessage(new AffixMessage()
+            {
+                Id = 0x48,
+                Field0 = objectId,
+                Field1 = 0x1,
+                aAffixGBIDs = new int[0]
+            });
+            Game.SendMessage(new AffixMessage()
+            {
+                Id = 0x48,
+                Field0 = objectId,
+                Field1 = 0x2,
+                aAffixGBIDs = new int[0]
+            });
+            Game.SendMessage(new ACDCollFlagsMessage
+            {
+                Id = 0xa6,
+                Field0 = objectId,
+                Field1 = 0x1
+            });
+
+            Game.SendMessage(new AttributesSetValuesMessage
+            {
+                Id = 0x4d,
+                Field0 = objectId,
+                atKeyVals = new NetAttributeKeyValue[15] {
+                    new NetAttributeKeyValue {
+                        Attribute = GameAttribute.Attributes[214],
+                        Int = 0
+                    },
+                    new NetAttributeKeyValue {
+                        Attribute = GameAttribute.Attributes[464],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 1048575,
+                        Attribute = GameAttribute.Attributes[441],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30582,
+                        Attribute = GameAttribute.Attributes[560],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30286,
+                        Attribute = GameAttribute.Attributes[560],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30285,
+                        Attribute = GameAttribute.Attributes[560],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30284,
+                        Attribute = GameAttribute.Attributes[560],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30283,
+                        Attribute = GameAttribute.Attributes[560],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30290,
+                        Attribute = GameAttribute.Attributes[560],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 79486,
+                        Attribute = GameAttribute.Attributes[560],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30286,
+                        Attribute = GameAttribute.Attributes[460],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30285,
+                        Attribute = GameAttribute.Attributes[460],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30284,
+                        Attribute = GameAttribute.Attributes[460],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30283,
+                        Attribute = GameAttribute.Attributes[460],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30290,
+                        Attribute = GameAttribute.Attributes[460],
+                        Int = 1
+                    }
+                }
+
+            });
+
+            Game.SendMessage(new AttributesSetValuesMessage
+            {
+                Id = 0x4d,
+                Field0 = objectId,
+                atKeyVals = new NetAttributeKeyValue[9] {
+                    new NetAttributeKeyValue {
+                        Attribute = GameAttribute.Attributes[86],
+                        Float = 4.546875f
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 79486,
+                        Attribute = GameAttribute.Attributes[460],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Attribute = GameAttribute.Attributes[84],
+                        Float = 4.546875f
+                    },
+                    new NetAttributeKeyValue {
+                        Attribute = GameAttribute.Attributes[81],
+                        Int = 0
+                    },
+                    new NetAttributeKeyValue {
+                        Attribute = GameAttribute.Attributes[77],
+                        Float = 4.546875f
+                    },
+                    new NetAttributeKeyValue {
+                        Attribute = GameAttribute.Attributes[69],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Field0 = 30582,
+                        Attribute = GameAttribute.Attributes[460],
+                        Int = 1
+                    },
+                    new NetAttributeKeyValue {
+                        Attribute = GameAttribute.Attributes[67],
+                        Int = 10
+                    },
+                    new NetAttributeKeyValue {
+                        Attribute = GameAttribute.Attributes[38],
+                        Int = 1
+                    }
+                }
+
+            });
+
+
+            Game.SendMessage(new ACDGroupMessage
+            {
+                Id = 0xb8,
+                Field0 = objectId,
+                Field1 = unchecked((int)0xb59b8de4),
+                Field2 = unchecked((int)0xffffffff)
+            });
+
+            Game.SendMessage(new ANNDataMessage
+            {
+                Id = 0x3e,
+                Field0 = objectId
+            });
+
+            Game.SendMessage(new ACDTranslateFacingMessage
+            {
+                Id = 0x70,
+                Field0 = objectId,
+                Field1 = (float)(rand.NextDouble() * 2.0 * Math.PI),
+                Field2 = false
+            });
+
+            Game.SendMessage(new SetIdleAnimationMessage
+            {
+                Id = 0xa5,
+                Field0 = objectId,
+                Field1 = 0x11150
+            });
+
+            Game.SendMessage(new SNONameDataMessage
+            {
+                Id = 0xd3,
+                Field0 = new SNOName
+                {
+                    Field0 = 0x1,
+                    Field1 = nId
+                }
+            });
+            #endregion
+            /*
+            _client.packetId += 30 * 2;
+            Game.SendMessage(new DWordDataMessage()
+            {
+                Id = 0x89,
+                Field0 = _client.packetId,
+            });
+
+            _client.tick += 20;
+            Game.SendMessage(new EndOfTickMessage()
+            {
+                Id = 0x008D,
+                Field0 = _client.tick - 20,
+                Field1 = _client.tick
+            });
+             * */
+        }
+
+        public void Tick(GameClient client)
+        {
+            foreach (BasicNPC npc in NPCs)
+            {
+                if (tick >= npc.nextThink)
+                {
+                    npc.Tick();
+
+
+
+                }
+            }
+
+            tick++;
+        }
+
+        public bool InWorld()
+        {
+            return encounters.Count > 0;
         }
 
         //get actor by snoid and x,y,z position - this is a helper function to prune duplicate entries from the packet data
@@ -195,26 +503,6 @@ namespace D3Sharp.Core.Map
             //NPCs.Add(new BasicNPC(objectId, ref Client));
         }
 
-        public void Tick()
-        {
-            //world time based code comes here later, call this X times a second (where x is around 20 imo)
-        }
-
-        public void HandleTarget(int ID)
-        {
-            List<BasicNPC> removelist = new List<BasicNPC>();
-            foreach (BasicNPC b in NPCs)
-            {
-                if (b.ID == ID)
-                {
-                    b.Die(0);
-                    removelist.Add(b);
-                }
-            }
-            foreach (BasicNPC b in removelist)
-            {
-                NPCs.Remove(b);
-            }
-        }
+        
     }
 }

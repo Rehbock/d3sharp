@@ -66,6 +66,7 @@ namespace D3Sharp.Net.Game
 
         public bool IsLoggingOut;
 
+
         public GameClient(IConnection connection, Universe GU)
         {
             this.Connection = connection;
@@ -125,6 +126,11 @@ namespace D3Sharp.Net.Game
                 var data = _outgoingBuffer.GetPacketAndReset();
                 Connection.Send(data);
             }
+        }
+
+        public World GetLocalWorld()
+        {
+            return GameUniverse.GetLocalWorld();
         }
 
         public void EnterInn()
@@ -392,272 +398,9 @@ namespace D3Sharp.Net.Game
             });
             FlushOutgoingBuffer();
         }
-        public void SpawnMob(int mobId)
+        public int GetNextValidObjectID()
         {
-            int nId = mobId;
-            if (this.position == null)
-                return;
-
-            if (objectIdsSpawned == null)
-            {
-                objectIdsSpawned = new List<int>();
-                objectIdsSpawned.Add(objectId - 100);
-                objectIdsSpawned.Add(objectId);
-            }
-
-            objectId++;
-            objectIdsSpawned.Add(objectId);
-
-            #region ACDEnterKnown Hittable Zombie
-            SendMessage(new ACDEnterKnownMessage()
-            {
-                Id = 0x003B,
-                Field0 = objectId,
-                Field1 = nId,
-                Field2 = 0x8,
-                Field3 = 0x0,
-                Field4 = new WorldLocationMessageData()
-                {
-                    Field0 = 1.35f,
-                    Field1 = new PRTransform()
-                    {
-                        Field0 = new Quaternion()
-                        {
-                            Field0 = 0.768145f,
-                            Field1 = new Vector3D()
-                            {
-                                Field0 = 0f,
-                                Field1 = 0f,
-                                Field2 = -0.640276f,
-                            },
-                        },
-                        Field1 = new Vector3D()
-                        {
-                            Field0 = this.position.Field0 + 5,
-                            Field1 = this.position.Field1 + 5,
-                            Field2 = this.position.Field2,
-                        },
-                    },
-                    Field2 = 0x772E0000,
-                },
-                Field5 = null,
-                Field6 = new GBHandle()
-                {
-                    Field0 = 1,
-                    Field1 = 1,
-                },
-                Field7 = 0x00000001,
-                Field8 = nId,
-                Field9 = 0x0,
-                Field10 = 0x0,
-                Field11 = 0x0,
-                Field12 = 0x0,
-                Field13 = 0x0
-            });
-            SendMessage(new AffixMessage()
-            {
-                Id = 0x48,
-                Field0 = objectId,
-                Field1 = 0x1,
-                aAffixGBIDs = new int[0]
-            });
-            SendMessage(new AffixMessage()
-            {
-                Id = 0x48,
-                Field0 = objectId,
-                Field1 = 0x2,
-                aAffixGBIDs = new int[0]
-            });
-            SendMessage(new ACDCollFlagsMessage
-            {
-                Id = 0xa6,
-                Field0 = objectId,
-                Field1 = 0x1
-            });
-
-            SendMessage(new AttributesSetValuesMessage
-            {
-                Id = 0x4d,
-                Field0 = objectId,
-                atKeyVals = new NetAttributeKeyValue[15] {
-                    new NetAttributeKeyValue {
-                        Attribute = GameAttribute.Attributes[214],
-                        Int = 0
-                    },
-                    new NetAttributeKeyValue {
-                        Attribute = GameAttribute.Attributes[464],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 1048575,
-                        Attribute = GameAttribute.Attributes[441],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30582,
-                        Attribute = GameAttribute.Attributes[560],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30286,
-                        Attribute = GameAttribute.Attributes[560],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30285,
-                        Attribute = GameAttribute.Attributes[560],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30284,
-                        Attribute = GameAttribute.Attributes[560],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30283,
-                        Attribute = GameAttribute.Attributes[560],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30290,
-                        Attribute = GameAttribute.Attributes[560],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 79486,
-                        Attribute = GameAttribute.Attributes[560],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30286,
-                        Attribute = GameAttribute.Attributes[460],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30285,
-                        Attribute = GameAttribute.Attributes[460],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30284,
-                        Attribute = GameAttribute.Attributes[460],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30283,
-                        Attribute = GameAttribute.Attributes[460],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30290,
-                        Attribute = GameAttribute.Attributes[460],
-                        Int = 1
-                    }
-                }
-
-            });
-
-            SendMessage(new AttributesSetValuesMessage
-            {
-                Id = 0x4d,
-                Field0 = objectId,
-                atKeyVals = new NetAttributeKeyValue[9] {
-                    new NetAttributeKeyValue {
-                        Attribute = GameAttribute.Attributes[86],
-                        Float = 4.546875f
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 79486,
-                        Attribute = GameAttribute.Attributes[460],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Attribute = GameAttribute.Attributes[84],
-                        Float = 4.546875f
-                    },
-                    new NetAttributeKeyValue {
-                        Attribute = GameAttribute.Attributes[81],
-                        Int = 0
-                    },
-                    new NetAttributeKeyValue {
-                        Attribute = GameAttribute.Attributes[77],
-                        Float = 4.546875f
-                    },
-                    new NetAttributeKeyValue {
-                        Attribute = GameAttribute.Attributes[69],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Field0 = 30582,
-                        Attribute = GameAttribute.Attributes[460],
-                        Int = 1
-                    },
-                    new NetAttributeKeyValue {
-                        Attribute = GameAttribute.Attributes[67],
-                        Int = 10
-                    },
-                    new NetAttributeKeyValue {
-                        Attribute = GameAttribute.Attributes[38],
-                        Int = 1
-                    }
-                }
-
-            });
-
-
-            SendMessage(new ACDGroupMessage
-            {
-                Id = 0xb8,
-                Field0 = objectId,
-                Field1 = unchecked((int)0xb59b8de4),
-                Field2 = unchecked((int)0xffffffff)
-            });
-
-            SendMessage(new ANNDataMessage
-            {
-                Id = 0x3e,
-                Field0 = objectId
-            });
-
-            SendMessage(new ACDTranslateFacingMessage
-            {
-                Id = 0x70,
-                Field0 = objectId,
-                Field1 = (float)(RandomHelper.NextDouble() * 2.0 * Math.PI),
-                Field2 = false
-            });
-
-            SendMessage(new SetIdleAnimationMessage
-            {
-                Id = 0xa5,
-                Field0 = objectId,
-                Field1 = 0x11150
-            });
-
-            SendMessage(new SNONameDataMessage
-            {
-                Id = 0xd3,
-                Field0 = new SNOName
-                {
-                    Field0 = 0x1,
-                    Field1 = nId
-                }
-            });
-            #endregion
-
-            packetId += 30 * 2;
-            SendMessage(new DWordDataMessage()
-            {
-                Id = 0x89,
-                Field0 = packetId,
-            });
-            tick += 20;
-            SendMessage(new EndOfTickMessage()
-            {
-                Id = 0x008D,
-                Field0 = tick - 20,
-                Field1 = tick
-            });
+            return objectId++;
         }
     }
 }
