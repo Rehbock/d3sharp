@@ -28,6 +28,8 @@ namespace D3Sharp.Core.NPC
         private bool isDead = false;
         private Random rand = new Random();
 
+        public readonly int experience = 90;
+
         float xvel = 0;
         float yvel = 0;
 
@@ -65,6 +67,24 @@ namespace D3Sharp.Core.NPC
         public override void Collide(BasicNPC actor)
         {
             nextThink += 100;
+        }
+
+        protected void LookAtPlayer()
+        {
+            Game.SendMessage(new ACDLookAtMessage() {
+                Field0=ID,
+                Field1=0x789E00E2
+            });
+
+            Game.tick += 2;
+            Game.SendMessage(new EndOfTickMessage()
+            {
+                Id = 0x008D,
+                Field0 = Game.tick - 2,
+                Field1 = Game.tick
+            });
+
+            Game.FlushOutgoingBuffer();
         }
 
         private void MoveActor()
@@ -255,6 +275,8 @@ namespace D3Sharp.Core.NPC
                 return;
 
             isDead = true;
+
+            Game.UpdateExperience(experience);
 
             Game.SendMessage(new AttributeSetValueMessage
             {

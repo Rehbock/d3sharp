@@ -66,12 +66,30 @@ namespace D3Sharp.Net.Game
 
         public bool IsLoggingOut;
 
+        public int Experience = 1200;
+
 
         public GameClient(IConnection connection, Universe GU)
         {
             this.Connection = connection;
             _outgoingBuffer.WriteInt(32, 0);
             GameUniverse = GU;
+        }
+
+        public void UpdateExperience(int exp)
+        {
+            Experience -= exp;
+
+            SendMessage(new AttributeSetValueMessage()
+            {
+                Id = 0x4c,
+                Field0 = 0x789E00E2,
+                Field1 = new NetAttributeKeyValue
+                {
+                    Attribute = GameAttribute.Attributes[34],
+                    Int = Experience
+                }
+            });
         }
 
         public void Parse(ConnectionDataEventArgs e)

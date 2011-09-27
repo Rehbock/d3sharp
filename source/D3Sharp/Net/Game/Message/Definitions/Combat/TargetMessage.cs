@@ -65,6 +65,7 @@ namespace D3Sharp.Net.Game.Message.Definitions.Combat
 
                         if (monster.IsDead())
                         {
+                            
                             monster.Die();
                             client.GetLocalWorld().encounters[i].RemoveMonster(monster);
                         }
