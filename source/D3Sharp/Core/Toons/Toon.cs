@@ -18,18 +18,21 @@
 
 using System;
 using System.Data.SQLite;
+using System.Linq;
+using D3.Account;
+using D3Sharp.Core.Accounts;
+using D3Sharp.Core.Channels;
 using D3Sharp.Core.Helpers;
 using D3Sharp.Core.Objects;
 using D3Sharp.Core.Storage;
 using D3Sharp.Utils;
 using D3Sharp.Utils.Helpers;
+using Account = D3Sharp.Core.Accounts.Account;
 
 namespace D3Sharp.Core.Toons
 {
     public class Toon : PersistentRPCObject
-    {        
-        private static readonly Logger Logger = LogManager.CreateLogger();
-
+    {
         /// <summary>
         /// D3 EntityID encoded id.
         /// </summary>
@@ -44,14 +47,15 @@ namespace D3Sharp.Core.Toons
         /// Toon handle struct.
         /// </summary>
         public ToonHandleHelper ToonHandle { get; private set; }
-        public long AccountID { get; private set; }
-        
+
         public string Name { get; private set; }
         public ToonClass Class { get; private set; }
-        public ToonGender Gender { get; private set; }
+        public ToonFlags Flags { get; private set; }
         public byte Level { get; private set; }
         public D3.Hero.Digest Digest { get; private set; }
         public D3.Hero.VisualEquipment Equipment { get; private set; }
+
+        public Account Owner { get; set; }
 
         //TODO: Toons should be linked to accounts here. /raist
 
@@ -64,7 +68,7 @@ namespace D3Sharp.Core.Toons
                     case ToonClass.Barbarian:
                         return 0x4FB91EE2;
                     case ToonClass.DemonHunter:
-                        return -930376119;
+                        return unchecked((int)0xC88B9649);
                     case ToonClass.Monk:
                         return 0x3DAC15;
                     case ToonClass.WitchDoctor:
@@ -76,45 +80,125 @@ namespace D3Sharp.Core.Toons
             }
         }
 
-        public uint GenderID
+        public int ResourceID
+        {
+            get
+            {
+                switch (this.Class)
+                {
+                    case ToonClass.Barbarian:
+                        return 0x00000002;
+                    case ToonClass.DemonHunter:
+                        return 0x00000005;
+                    case ToonClass.Monk:
+                        return 0x00000003;
+                    case ToonClass.WitchDoctor:
+                        return 0x00000000;
+                    case ToonClass.Wizard:
+                        return 0x00000001;
+                }
+                return 0x00000000;
+            }
+        }
+
+        public int ClassSNO
+        {
+            get
+            {
+                if (Gender == 0)
+                {
+                    switch (this.Class)
+                    {
+                        case ToonClass.Barbarian:
+                            return 0x0CE5;
+                        case ToonClass.DemonHunter:
+                            return 0x0125C7;
+                        case ToonClass.Monk:
+                            return 0x1271;
+                        case ToonClass.WitchDoctor:
+                            return 0x1955;
+                        case ToonClass.Wizard:
+                            return 0x1990;
+                    }
+                }
+                else
+                {
+                    switch (this.Class)
+                    {
+                        case ToonClass.Barbarian:
+                            return 0x0CD5;
+                        case ToonClass.DemonHunter:
+                            return 0x0123D2;
+                        case ToonClass.Monk:
+                            return 0x126D;
+                        case ToonClass.WitchDoctor:
+                            return 0x1951;
+                        case ToonClass.Wizard:
+                            return 0x197E;
+                    }
+                }
+                return 0x0;
+            }
+        }
+
+        public int SkillKit
+        {
+            get
+            {
+                switch (this.Class)
+                {
+                    case ToonClass.Barbarian:
+                        return 0x00008AF4;
+                    case ToonClass.DemonHunter:
+                        return 0x00008AFC;
+                    case ToonClass.Monk:
+                        return 0x00008AFA;
+                    case ToonClass.WitchDoctor:
+                        return 0x00008AFF;
+                    case ToonClass.Wizard:
+                        return 0x00008B00;
+                }
+                return 0x00000001;
+            }
+        }
+
+        public int Gender
         {
             get {
-                return this.Gender == ToonGender.Male ? (uint)0x0 : 0x2000002;
+                return (int)(this.Flags & ToonFlags.Female); // 0x00 for male, so we can just return the AND operation
             }
         }
 
         public Toon(ulong persistantId, string name, byte @class, byte gender, byte level, long accountId) // Toon with given persistent ID
             :base(persistantId)
         {
-            this.SetFields(name, (ToonClass)@class, (ToonGender)gender, level, accountId);
+            this.SetFields(name, (ToonClass)@class, (ToonFlags)gender, level, AccountManager.GetAccountByPersistantID((ulong)accountId));
         }
 
-        public Toon(string name, int classId, ToonGender gender, byte level, long accountId) // Toon with **newly generated** persistent ID
+        public Toon(string name, int classId, ToonFlags flags, byte level, Account account) // Toon with **newly generated** persistent ID
             : base(StringHashHelper.HashIdentity(name))
         {
-            this.SetFields(name, GetClassByID(classId), gender, level, accountId);
+            this.SetFields(name, GetClassByID(classId), flags, level, account);
         }
 
-        private void SetFields(string name, ToonClass @class, ToonGender gender, byte level, long accountId)
+        private void SetFields(string name, ToonClass @class, ToonFlags flags, byte level, Account owner)
         {
             this.ToonHandle = new ToonHandleHelper(this.PersistentID);
             this.D3EntityID = this.ToonHandle.ToD3EntityID();
             this.BnetEntityID = this.ToonHandle.ToBnetEntityID();
             this.Name = name;
             this.Class = @class;
-            this.Gender = gender;
+            this.Flags = flags;
             this.Level = level;
-            this.AccountID = accountId;
+            this.Owner = owner;
 
+            var itemsGenerator = new Items.ItemTypeGenerator();
 
             var visualItems = new[]
                             {
-                                // Some hack. We should either load strings and then hash it from DB or load hash directly from DB..
-                                // Showing a head and a Wep to show how it works
-
                                 // Head
                                 D3.Hero.VisualItem.CreateBuilder()
-                                    .SetGbid( (int)StringHashHelper.HashItemName("Helm_002") )
+                                    .SetGbid( itemsGenerator.generateRandomElement(Items.ItemType.Helm).Gbid)
                                     .SetDyeType(0)
                                     .SetItemEffectType(0)
                                     .SetEffectLevel(0)
@@ -122,7 +206,7 @@ namespace D3Sharp.Core.Toons
 
                                 // Chest
                                 D3.Hero.VisualItem.CreateBuilder()
-                                    .SetGbid(0)
+                                    .SetGbid(itemsGenerator.generateRandomElement(Items.ItemType.ChestArmor).Gbid)
                                     .SetDyeType(0)
                                     .SetItemEffectType(0)
                                     .SetEffectLevel(0)
@@ -130,7 +214,7 @@ namespace D3Sharp.Core.Toons
 
                                 // Feet
                                 D3.Hero.VisualItem.CreateBuilder()
-                                    .SetGbid(0)
+                                    .SetGbid(itemsGenerator.generateRandomElement(Items.ItemType.Boots).Gbid)
                                     .SetDyeType(0)
                                     .SetItemEffectType(0)
                                     .SetEffectLevel(0)
@@ -138,7 +222,7 @@ namespace D3Sharp.Core.Toons
 
                                 // Hands
                                 D3.Hero.VisualItem.CreateBuilder()
-                                    .SetGbid(0)
+                                    .SetGbid(itemsGenerator.generateRandomElement(Items.ItemType.Gloves).Gbid)
                                     .SetDyeType(0)
                                     .SetItemEffectType(0)
                                     .SetEffectLevel(0)
@@ -146,7 +230,7 @@ namespace D3Sharp.Core.Toons
 
                                 // Weapon (1)
                                 D3.Hero.VisualItem.CreateBuilder()
-                                    .SetGbid( (int)StringHashHelper.HashItemName("Unique_Mace_1H_012") )
+                                    .SetGbid(itemsGenerator.generateRandomElement(Items.ItemType.Sword_1H).Gbid)
                                     .SetDyeType(0)
                                     .SetItemEffectType(0)
                                     .SetEffectLevel(0)
@@ -154,7 +238,7 @@ namespace D3Sharp.Core.Toons
 
                                 // Weapon (2)
                                 D3.Hero.VisualItem.CreateBuilder()
-                                    .SetGbid(0)
+                                    .SetGbid(itemsGenerator.generateRandomElement(Items.ItemType.Shield).Gbid)
                                     .SetDyeType(0)
                                     .SetItemEffectType(0)
                                     .SetEffectLevel(0)
@@ -162,7 +246,7 @@ namespace D3Sharp.Core.Toons
 
                                 // Shoulders
                                 D3.Hero.VisualItem.CreateBuilder()
-                                    .SetGbid(0)
+                                    .SetGbid(itemsGenerator.generateRandomElement(Items.ItemType.Shoulders).Gbid)
                                     .SetDyeType(0)
                                     .SetItemEffectType(0)
                                     .SetEffectLevel(0)
@@ -170,7 +254,7 @@ namespace D3Sharp.Core.Toons
 
                                 // Legs
                                 D3.Hero.VisualItem.CreateBuilder()
-                                    .SetGbid(0)
+                                    .SetGbid(itemsGenerator.generateRandomElement(Items.ItemType.Pants).Gbid)
                                     .SetDyeType(0)
                                     .SetItemEffectType(0)
                                     .SetEffectLevel(0)
@@ -184,7 +268,7 @@ namespace D3Sharp.Core.Toons
                 .SetHeroId(this.D3EntityID)
                 .SetHeroName(this.Name)
                 .SetGbidClass((int)this.ClassID)
-                .SetPlayerFlags(this.GenderID)
+                .SetPlayerFlags((uint)this.Flags)
                 .SetLevel(this.Level)
                 .SetVisualEquipment(this.Equipment)
                 .SetLastPlayedAct(0)
@@ -203,7 +287,7 @@ namespace D3Sharp.Core.Toons
             {
                 case 0x4FB91EE2:
                     return ToonClass.Barbarian;
-                case -930376119:
+                case unchecked((int)0xC88B9649):
                     return ToonClass.DemonHunter;
                 case 0x3DAC15:
                     return ToonClass.Monk;
@@ -216,14 +300,68 @@ namespace D3Sharp.Core.Toons
             return ToonClass.Barbarian;
         }
 
-        private static ToonGender GetGenderByID(uint genderId)
+        public bnet.protocol.presence.Field QueryField(bnet.protocol.presence.FieldKey queryKey)
         {
-            return genderId== 0x2000002 ? ToonGender.Female : ToonGender.Male;
+            var field = bnet.protocol.presence.Field.CreateBuilder().SetKey(queryKey);
+
+            switch ((FieldKeyHelper.Program)queryKey.Program)
+            {
+                case FieldKeyHelper.Program.D3:
+                    if (queryKey.Group == 2 && queryKey.Field == 1) // Banner configuration
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetMessageValue(this.Owner.BannerConfiguration.ToByteString()).Build());
+                    }
+                    else if (queryKey.Group == 3 && queryKey.Field == 1) // Hero's class (GbidClass)
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetIntValue(this.ClassID).Build());
+                    }
+                    else if (queryKey.Group == 3 && queryKey.Field == 2) // Hero's current level
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetIntValue(this.Level).Build());
+                    }
+                    else if (queryKey.Group == 3 && queryKey.Field == 3) // Hero's visible equipment
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetMessageValue(this.Equipment.ToByteString()).Build());
+                    }
+                    else if (queryKey.Group == 3 && queryKey.Field == 4) // Hero's flags (gender and such)
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetIntValue((uint)(this.Flags | ToonFlags.BothUnknowns)).Build());
+                    }
+                    else if (queryKey.Group == 4 && queryKey.Field == 1) // Channel ID if the client is online
+                    {
+                        if(this.Owner.LoggedInClient!=null) field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetMessageValue(this.Owner.LoggedInClient.CurrentChannel.D3EntityId.ToByteString()).Build());
+                    }
+                    else if (queryKey.Group == 4 && queryKey.Field == 2) // Current screen (all known values are just "in-menu"; also see ScreenStatuses sent in ChannelService.UpdateChannelState)
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetIntValue(0).Build());
+                    }
+                    break;
+                case FieldKeyHelper.Program.BNet:
+                    if (queryKey.Group == 3 && queryKey.Field == 2) // Toon name
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetStringValue(this.Name).Build());
+                    }
+                    else if (queryKey.Group == 3 && queryKey.Field == 3) // Whether the toon is online
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetBoolValue(true).Build());
+                    }
+                    else if (queryKey.Group == 3 && queryKey.Field == 5) // Away status - 0 for online
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetIntValue(0).Build());
+                    }
+                    else if (queryKey.Group == 3 && queryKey.Field == 9) // Program - always D3
+                    {
+                        field.SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetFourccValue("D3").Build());
+                    }
+                    break;
+            }
+
+            return field.HasValue ? field.Build() : null;
         }
 
-        protected override void NotifySubscriber(Net.BNet.BNetClient client)
+        protected override void NotifySubscriptionAdded(Net.BNet.BNetClient client)
         {
-            // Check d3sharp/docs/rpc/notification-data-layout.txt for fields keys
+            // Check docs/rpc/fields.txt for fields keys
 
             // Banner configuration
             var fieldKey1 = FieldKeyHelper.Create(FieldKeyHelper.Program.D3, 2, 1, 0);
@@ -245,9 +383,9 @@ namespace D3Sharp.Core.Toons
             var field4 = bnet.protocol.presence.Field.CreateBuilder().SetKey(fieldKey4).SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetMessageValue(this.Equipment.ToByteString()).Build()).Build();
             var fieldOperation4 = bnet.protocol.presence.FieldOperation.CreateBuilder().SetField(field4).Build();
 
-            // Gender
+            // Flags
             var fieldKey5 = FieldKeyHelper.Create(FieldKeyHelper.Program.D3, 3, 4, 0);
-            var field5 = bnet.protocol.presence.Field.CreateBuilder().SetKey(fieldKey5).SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetIntValue(this.GenderID).Build()).Build();
+            var field5 = bnet.protocol.presence.Field.CreateBuilder().SetKey(fieldKey5).SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetIntValue((uint)(this.Flags | ToonFlags.BothUnknowns)).Build()).Build();
             var fieldOperation5 = bnet.protocol.presence.FieldOperation.CreateBuilder().SetField(field5).Build();
 
             // Name
@@ -255,9 +393,9 @@ namespace D3Sharp.Core.Toons
             var field6 = bnet.protocol.presence.Field.CreateBuilder().SetKey(fieldKey6).SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetStringValue(this.Name).Build()).Build();
             var fieldOperation6 = bnet.protocol.presence.FieldOperation.CreateBuilder().SetField(field6).Build();
 
-            // Unknown boolean - probably harcore mode enabled?? /raist
+            // Whether the toon is online
             var fieldKey7 = FieldKeyHelper.Create(FieldKeyHelper.Program.BNet, 3, 3, 0);
-            var field7 = bnet.protocol.presence.Field.CreateBuilder().SetKey(fieldKey7).SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetBoolValue(false).Build()).Build();
+            var field7 = bnet.protocol.presence.Field.CreateBuilder().SetKey(fieldKey7).SetValue(bnet.protocol.attribute.Variant.CreateBuilder().SetBoolValue(true).Build()).Build();
             var fieldOperation7 = bnet.protocol.presence.FieldOperation.CreateBuilder().SetField(field7).Build();
 
             // Program - FourCC "D3"
@@ -282,20 +420,26 @@ namespace D3Sharp.Core.Toons
             // Put in AddNotification message
             var builder = bnet.protocol.channel.AddNotification.CreateBuilder().SetChannelState(channelState);
 
-            // Make the rpc call
+            // Make the RPC call
             client.CallMethod(bnet.protocol.channel.ChannelSubscriber.Descriptor.FindMethodByName("NotifyAdd"), builder.Build(),this.DynamicId);
+        }
+
+        public override string ToString()
+        {
+            return String.Format("Name: {0} High: {1} Low: {2}", this.Name, this.BnetEntityID.High,
+                                 this.BnetEntityID.Low);
         }
 
         public void SaveToDB()
         {
             try
-            {                
+            {
                 if (ExistsInDB())
                 {
                     var query =
                         string.Format(
                             "UPDATE toons SET name='{0}', class={1}, gender={2}, level={3}, accountId={4} WHERE id={5}",
-                            Name, (byte)this.Class, (byte)this.Gender, this.Level, this.AccountID, this.PersistentID);
+                            Name, (byte)this.Class, (byte)this.Gender, this.Level, this.Owner.PersistentID, this.PersistentID);
 
                     var cmd = new SQLiteCommand(query, DBManager.Connection);
                     cmd.ExecuteNonQuery();
@@ -305,10 +449,10 @@ namespace D3Sharp.Core.Toons
                     var query =
                         string.Format(
                             "INSERT INTO toons (id, name, class, gender, level, accountId) VALUES({0},'{1}',{2},{3},{4},{5})",
-                            this.PersistentID, this.Name, (byte)this.Class, (byte)this.Gender, this.Level, this.AccountID);
+                            this.PersistentID, this.Name, (byte)this.Class, (byte)this.Gender, this.Level, this.Owner.PersistentID);
 
                     var cmd = new SQLiteCommand(query, DBManager.Connection);
-                    cmd.ExecuteNonQuery();                    
+                    cmd.ExecuteNonQuery();
                 }
             }
             catch (Exception e)
@@ -353,14 +497,19 @@ namespace D3Sharp.Core.Toons
     {
         Barbarian, // 0x4FB91EE2
         Monk, // 0x3DAC15
-        DemonHunter, // 0xc88b9649
+        DemonHunter, // 0xC88B9649
         WitchDoctor, // 0x343C22A
         Wizard // 0x1D4681B1
     }
 
-    public enum ToonGender
+    [Flags]
+    public enum ToonFlags : uint
     {
-        Male, // 0x0
-        Female // 0x2000002
+        Male=0x00,
+        Female=0x02,
+        // TODO: These two need to be figured out still.. /plash
+        Unknown1=0x20,
+        Unknown2=0x2000000,
+        BothUnknowns=Unknown1 | Unknown2
     }
 }
