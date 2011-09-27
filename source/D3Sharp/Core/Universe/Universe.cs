@@ -26,6 +26,14 @@ namespace D3Sharp.Core.Universe
         private List<World> Worlds;
         private List<Toon> Players;
 
+        public World GetLocalWorld()
+        {
+            if (Worlds == null)
+                return null;
+
+            return Worlds[0];
+        }
+
         World GetWorld(int WorldID)
         {
             for (int x = 0; x < Worlds.Count; x++)
@@ -34,6 +42,17 @@ namespace D3Sharp.Core.Universe
             World w = new World(WorldID);
             Worlds.Add(w);
             return w;
+        }
+
+        public void Tick(GameClient client)
+        {
+            if (Worlds == null)
+                return;
+
+            for (int i = 0; i < Worlds.Count; i++)
+            {
+                Worlds[i].Tick(client);
+            }
         }
 
         void LoadUniverseData(string Filename)

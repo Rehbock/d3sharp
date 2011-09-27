@@ -32,25 +32,7 @@ namespace D3Sharp.Net.Game.Message.Definitions.Animation
 
         public override void Handle(GameClient client)
         {
-            var oldPosField1 = client.position.Field1;
-            var oldPosField2 = client.position.Field2;
-            for (var i = 0; i < 10; i++)
-            {
-                if ((i % 2) == 0)
-                {
-                    client.position.Field0 += (float)(RandomHelper.NextDouble() * 20);
-                    client.position.Field1 += (float)(RandomHelper.NextDouble() * 20);
-                }
-                else
-                {
-                    client.position.Field0 -= (float)(RandomHelper.NextDouble() * 20);
-                    client.position.Field1 -= (float)(RandomHelper.NextDouble() * 20);
-                }
-                client.SpawnMob(BasicNPC.RandomNPC());
-            }
-
-            client.position.Field1 = oldPosField1;
-            client.position.Field2 = oldPosField2;
+           
         }
 
         public override void Parse(GameBitBuffer buffer)

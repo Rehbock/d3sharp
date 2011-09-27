@@ -106,6 +106,10 @@ namespace D3Sharp.Net.Game.Message.Definitions.Game
             client.GameUniverse.EnterPlayer(client);
 
             client.FlushOutgoingBuffer();
+
+            client.GetLocalWorld().SendEncounters(client);
+
+            client.FlushOutgoingBuffer();
         }
 
         public override void Parse(GameBitBuffer buffer)
