@@ -10,11 +10,12 @@ namespace D3Sharp.Core.NPC
     class MonsterSkeleton : Monster
     {
         public MonsterSkeleton()
-            : base(11488, 11465, 11529, 54729, 11468) // 1:get hit 2:Attack
+            : base(11488, 11465, 11529, 54729, 11468) 
         {
             npcType = NPCList.Zombie_A;
             HP = 100;
         }
+        
 
         //
         // Tick
@@ -36,14 +37,19 @@ namespace D3Sharp.Core.NPC
 
             
 
-            if (distFromPlayer > 4 && distFromPlayer < 64)
+            if (distFromPlayer > 1 && distFromPlayer < 64)
             {
-              //  LookAtPlayer();
-                MoveToPlayer();
+              //  LookToPlayer();
+                if (!ismoving)
+                {
+                    ismoving = true;
+                    MoveToPlayer();
+                }
             }
             else if (distFromPlayer < 4)
             {
-                MeleeAttack(6);
+               
+              //  MeleeAttack(6);
             }
             else
             {
