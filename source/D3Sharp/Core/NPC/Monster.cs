@@ -27,8 +27,9 @@ namespace D3Sharp.Core.NPC
         protected NPCList npcType;
         private bool isDead = false;
         public bool isplayinganim = false;
+        public bool ismoving = false;
 
-        public readonly int experience = 90;
+        public readonly int experience = 120;
 
         float xvel = 0;
         float yvel = 0;
@@ -69,30 +70,31 @@ namespace D3Sharp.Core.NPC
             nextThink += 100;
         }
 
-        protected void LookAtPlayer()
+        private void LookAtPlayer()
         {
             Game.SendMessage(new ACDTranslateNormalMessage()
             {
                 Field0 = ID,
                 Field1 = Position,
                 Id = 0x006E,
-                Field2 = (float)Math.Atan2(Position.Field0 - Game.position.Field0, Position.Field1 - Game.position.Field1),
+                Field2 = -1.0f*(float)Math.Atan2(Position.Field0 - Game.position.Field0, Position.Field1 - Game.position.Field1)-20,
                 Field3 = false,
-                Field4 = 0.8f,
+                Field4 = 1.0f,
                 Field5 = 0,
-                Field6 = 69728,
+                Field6 =  69728,
             });
 
 
-            Game.tick += 20;
+            nextThink += 200;
             Game.SendMessage(new EndOfTickMessage()
             {
                 Id = 0x008D,
-                Field0 = Game.tick - 2,
-                Field1 = Game.tick
+                Field0 = nextThink - 2,
+                Field1 = nextThink
             });
 
             Game.FlushOutgoingBuffer();
+       
         }
 
         private void MoveActor()
@@ -102,23 +104,39 @@ namespace D3Sharp.Core.NPC
                 Field0 = ID,
                 Field1 = Position,
                 Id = 0x006E,
-                Field2 = (float)Math.Atan2(Position.Field0 - Game.position.Field0, Position.Field1 - Game.position.Field1),
+                Field2 = -1.0f * (float)Math.Atan2(Position.Field0 - Game.position.Field0, Position.Field1 - Game.position.Field1) - 20,
                 Field3 = false,
-                Field4 = 0.3f,
+                Field4 = 0.05f,
                  Field5 = 0,
                 Field6 = 69728,
             });
 
 
-            Game.tick += 200;
+            nextThink += 200;
             Game.SendMessage(new EndOfTickMessage()
             {
                 Id = 0x008D,
-                Field0 = Game.tick - 2,
-                Field1 = Game.tick
-            });
+                Field0 = nextThink - 2,
+                Field1 = nextThink
+              });
 
             Game.FlushOutgoingBuffer();
+        }
+
+
+        public void LookToPlayer()
+        {
+            if (Game == null || Game.position == null)
+                return;
+                Game.packetId += 10 * 2;
+                Game.SendMessage(new DWordDataMessage()
+                {
+                    Id = 0x89,
+                    Field0 = Game.packetId,
+                });
+               Game.FlushOutgoingBuffer();
+                LookAtPlayer();
+           
         }
 
         public void MoveToPlayer()
@@ -129,7 +147,7 @@ namespace D3Sharp.Core.NPC
             if (!isplayinganim)
             {
                 isplayinganim = true;
-                animTime = 100;
+                animTime = 1700;
                 state = MonsterState.MOB_STATE_WALKING_TO_PLAYER;
                 
                 xvel = Game.position.Field0 - Position.Field0;
@@ -140,7 +158,22 @@ namespace D3Sharp.Core.NPC
 
                 PlayAnimation(WalkAnimation);
 
-                nextThink += 3;
+                nextThink += 1;
+
+
+                                Game.packetId += 10 * 2;
+                Game.SendMessage(new DWordDataMessage()
+                {
+                    Id = 0x89,
+                    Field0 = Game.packetId,
+                });
+
+
+
+                Game.FlushOutgoingBuffer();
+            
+
+
 
                 MoveActor();
             }
@@ -208,6 +241,8 @@ namespace D3Sharp.Core.NPC
             {
                 state = MonsterState.MOB_STATE_IDLE;
                 isplayinganim = false;
+                ismoving = false;
+                
             }
             else
             {
@@ -219,7 +254,10 @@ namespace D3Sharp.Core.NPC
         {
             // Pain stops everything.
             state = MonsterState.MOB_STATE_PAIN;
-            nextThink +=50;
+            nextThink =0;
+            isplayinganim = false;
+            ismoving = false;
+            animTime = 0;
             HP -= damage;
 
             Game.SendMessage(new PlayEffectMessage()
