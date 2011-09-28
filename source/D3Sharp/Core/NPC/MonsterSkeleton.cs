@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,9 +10,9 @@ namespace D3Sharp.Core.NPC
     class MonsterSkeleton : Monster
     {
         public MonsterSkeleton()
-            : base(9811, 9792, 9811, 9831, 9807)
+            : base(11488, 11465, 11529, 54729, 11468) // 1:get hit 2:Attack
         {
-            npcType = NPCList.SkeletonArcher_A;
+            npcType = NPCList.Zombie_A;
             HP = 100;
         }
 
@@ -34,15 +34,16 @@ namespace D3Sharp.Core.NPC
 
             base.Tick();
 
-            //LookAtPlayer();
+            
 
-            if (distFromPlayer > 13 && distFromPlayer < 64 )
+            if (distFromPlayer > 4 && distFromPlayer < 64)
             {
-              //  MeleeAttack(6);
+              //  LookAtPlayer();
+                MoveToPlayer();
             }
-            else if (distFromPlayer < 13)
+            else if (distFromPlayer < 4)
             {
-
+                MeleeAttack(6);
             }
             else
             {
