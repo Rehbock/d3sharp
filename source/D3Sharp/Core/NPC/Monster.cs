@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,6 +26,7 @@ namespace D3Sharp.Core.NPC
         protected int spawnId;
         protected NPCList npcType;
         private bool isDead = false;
+        public bool isplayinganim = false;
 
         public readonly int experience = 90;
 
@@ -53,7 +54,7 @@ namespace D3Sharp.Core.NPC
 
         private int animTime = 0;
 
-        public Monster(short Pain, short Attack, short walk, short idle, short Death)
+        public Monster(int Pain, int Attack, int walk, int idle, int Death)
         {
             PainAnimation = Pain;
             AttackAnimation = Attack;
@@ -77,13 +78,13 @@ namespace D3Sharp.Core.NPC
                 Id = 0x006E,
                 Field2 = (float)Math.Atan2(Position.Field0 - Game.position.Field0, Position.Field1 - Game.position.Field1),
                 Field3 = false,
-                Field4 = 1.0f,
+                Field4 = 0.8f,
                 Field5 = 0,
                 Field6 = 69728,
             });
 
 
-            Game.tick += 2;
+            Game.tick += 20;
             Game.SendMessage(new EndOfTickMessage()
             {
                 Id = 0x008D,
@@ -103,13 +104,13 @@ namespace D3Sharp.Core.NPC
                 Id = 0x006E,
                 Field2 = (float)Math.Atan2(Position.Field0 - Game.position.Field0, Position.Field1 - Game.position.Field1),
                 Field3 = false,
-                Field4 = 1.0f,
+                Field4 = 0.3f,
                  Field5 = 0,
                 Field6 = 69728,
             });
 
 
-            Game.tick += 2;
+            Game.tick += 200;
             Game.SendMessage(new EndOfTickMessage()
             {
                 Id = 0x008D,
@@ -125,35 +126,45 @@ namespace D3Sharp.Core.NPC
             if (Game == null || Game.position == null)
                 return;
 
-            state = MonsterState.MOB_STATE_WALKING_TO_PLAYER;
+            if (!isplayinganim)
+            {
+                isplayinganim = true;
+                animTime = 100;
+                state = MonsterState.MOB_STATE_WALKING_TO_PLAYER;
+                
+                xvel = Game.position.Field0 - Position.Field0;
+                yvel = Game.position.Field1 - Position.Field1;
 
-            xvel = Game.position.Field0 - Position.Field0;
-            yvel = Game.position.Field1 - Position.Field1;
+                Position.Field0 += xvel * 0.108f;
+                Position.Field1 += yvel * 0.108f;
 
-            Position.Field0 += xvel * 0.108f;
-            Position.Field1 += yvel * 0.108f;
+                PlayAnimation(WalkAnimation);
 
-            PlayAnimation(WalkAnimation);
+                nextThink += 3;
 
-            nextThink += 3;
-
-            MoveActor();
+                MoveActor();
+            }
         }
 
         protected void MeleeAttack(int damage)
         {
-            PlayAnimation(AttackAnimation);
-
-            Game.packetId += 10 * 2;
-            Game.SendMessage(new DWordDataMessage()
+            if (!isplayinganim)
             {
-                Id = 0x89,
-                Field0 = Game.packetId,
-            });
+                isplayinganim = true;
+                PlayAnimation(AttackAnimation);
+                animTime = 100;
+                nextThink += 10;
+                Game.packetId += 10 * 2;
+                Game.SendMessage(new DWordDataMessage()
+                {
+                    Id = 0x89,
+                    Field0 = Game.packetId,
+                });
 
-            nextThink += 40;
 
-            Game.FlushOutgoingBuffer();
+
+                Game.FlushOutgoingBuffer();
+            }
         }
 
         public int SpawnID
@@ -196,6 +207,7 @@ namespace D3Sharp.Core.NPC
             if (animTime < 0)
             {
                 state = MonsterState.MOB_STATE_IDLE;
+                isplayinganim = false;
             }
             else
             {
